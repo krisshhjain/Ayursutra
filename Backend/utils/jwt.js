@@ -1,7 +1,14 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+// Get the directory name for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from the root directory
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 // Generate JWT token
 export const generateToken = (userId, userType) => {

@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
@@ -15,8 +17,12 @@ import reviewRoutes from './routes/reviews.js';
 import chatRoutes from './routes/chats.js';
 import './scripts/notificationScheduler.js'; // Start notification scheduler
 
-// Load environment variables
-dotenv.config();
+// Get the directory name for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from the root directory
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 // Connect to MongoDB
 connectDB();

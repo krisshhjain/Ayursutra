@@ -1,10 +1,16 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import NotificationService from '../services/NotificationService.js';
 import connectDB from '../config/database.js';
 
-// Load environment variables
-dotenv.config();
+// Get the directory name for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from the root directory
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 class NotificationScheduler {
   constructor() {
