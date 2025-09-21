@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AyurSutra Design System - Ayurveda-inspired healthcare SaaS theme
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Core Colors - Ayurveda Earth Tones */
+    --background: 41 20% 98%;
+    --foreground: 25 15% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 15% 20%;
+
+    /* Primary - Sage Green (Healing) */
+    --primary: 120 25% 35%;
+    --primary-foreground: 0 0% 98%;
+    --primary-light: 120 35% 85%;
+    --primary-dark: 120 30% 25%;
+
+    /* Secondary - Warm Beige (Earth) */
+    --secondary: 41 25% 92%;
+    --secondary-foreground: 25 15% 25%;
+
+    /* Muted - Soft Neutrals */
+    --muted: 41 15% 94%;
+    --muted-foreground: 25 8% 45%;
+
+    /* Accent - Therapeutic Gold */
+    --accent: 45 70% 70%;
+    --accent-foreground: 25 20% 15%;
+
+    /* Healing Tones */
+    --healing: 160 40% 45%;
+    --healing-foreground: 0 0% 98%;
+    --wellness: 85 30% 55%;
+    --wellness-foreground: 0 0% 98%;
+
+    /* Status Colors */
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 120 40% 40%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 85% 60%;
+    --warning-foreground: 25 20% 15%;
+
+    /* UI Elements */
+    --border: 41 20% 88%;
+    --input: 41 20% 95%;
+    --ring: 120 25% 35%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--healing)));
+    --gradient-wellness: linear-gradient(135deg, hsl(var(--wellness)), hsl(var(--accent)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--secondary)));
+
+    /* Spacing & Radius */
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark Mode - Deep Earth Tones */
+    --background: 25 20% 8%;
+    --foreground: 41 15% 92%;
+
+    --card: 25 25% 12%;
+    --card-foreground: 41 15% 92%;
+
+    --popover: 25 25% 12%;
+    --popover-foreground: 41 15% 92%;
+
+    --primary: 120 35% 60%;
+    --primary-foreground: 25 20% 8%;
+    --primary-light: 120 25% 25%;
+    --primary-dark: 120 40% 70%;
+
+    --secondary: 25 15% 15%;
+    --secondary-foreground: 41 15% 88%;
+
+    --muted: 25 10% 18%;
+    --muted-foreground: 41 8% 65%;
+
+    --accent: 45 65% 55%;
+    --accent-foreground: 25 20% 8%;
+
+    --healing: 160 35% 55%;
+    --healing-foreground: 25 20% 8%;
+    --wellness: 85 25% 65%;
+    --wellness-foreground: 25 20% 8%;
+
+    --destructive: 0 55% 65%;
+    --destructive-foreground: 25 20% 8%;
+    --success: 120 35% 60%;
+    --success-foreground: 25 20% 8%;
+    --warning: 38 75% 70%;
+    --warning-foreground: 25 20% 8%;
+
+    --border: 25 15% 20%;
+    --input: 25 15% 18%;
+    --ring: 120 35% 60%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--healing)));
+    --gradient-wellness: linear-gradient(135deg, hsl(var(--wellness)), hsl(var(--accent)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--secondary)));
+
+    --sidebar-background: 25 25% 10%;
+    --sidebar-foreground: 41 15% 88%;
+    --sidebar-primary: 120 35% 60%;
+    --sidebar-primary-foreground: 25 20% 8%;
+    --sidebar-accent: 25 15% 15%;
+    --sidebar-accent-foreground: 41 15% 88%;
+    --sidebar-border: 25 15% 18%;
+    --sidebar-ring: 120 35% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', 'system-ui', '-apple-system', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-foreground;
+  }
+}
+
+@layer components {
+  /* Custom animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Gradient backgrounds */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-wellness {
+    background: var(--gradient-wellness);
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  /* Custom shadows */
+  .shadow-wellness {
+    box-shadow: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 40px hsl(var(--accent) / 0.3);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}

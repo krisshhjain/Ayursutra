@@ -1,0 +1,58 @@
+{
+  "name": "ayursutra-backend",
+  "version": "1.0.0",
+  "description": "Backend API for AyurSutra application",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "echo 'Build completed'",
+    "setup-admin": "node setupAdmin.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --detectOpenHandles --forceExit",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch --detectOpenHandles",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --detectOpenHandles --forceExit",
+    "notifications:process": "node scripts/notificationScheduler.js once",
+    "notifications:start": "node scripts/notificationScheduler.js",
+    "notifications:start:1min": "node scripts/notificationScheduler.js 1",
+    "notifications:start:10min": "node scripts/notificationScheduler.js 10"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.18.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  },
+  "keywords": ["ayurveda", "healthcare", "api"],
+  "author": "AyurSutra Team",
+  "license": "MIT",
+  "jest": {
+    "preset": null,
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".js"],
+    "globals": {
+      "__dirname": true
+    },
+    "transform": {},
+    "setupFilesAfterEnv": ["./tests/setup.js"],
+    "testMatch": ["**/tests/**/*.test.js"],
+    "verbose": true,
+    "collectCoverageFrom": [
+      "models/**/*.js",
+      "routes/**/*.js", 
+      "lib/**/*.js",
+      "!tests/**/*"
+    ]
+  }
+}
