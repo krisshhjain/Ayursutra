@@ -22,3 +22,26 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+## Ignore environment and secret files
+# Env files
+.env
+.env.*
+Backend/.env
+
+# Common secret types
+*.key
+*.pem
+*.p12
+*.crt
+*.cert
+
+# Notification summary (contained a Sendinblue API key)
+NOTIFICATION_SYSTEM_SUMMARY.md
+
+# Other local secrets
+.secret
+secrets*
+
+# Optional: ignore local IDE settings that may contain secrets
+.vscode/settings.json
