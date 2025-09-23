@@ -15,7 +15,6 @@ import {
   X,
   BarChart3,
   Users,
-  Brain,
   FileCheck,
   CalendarCheck,
   MessageCircle
@@ -41,6 +40,7 @@ const ResponsiveSidebar = ({ userType, userName, userRole }: SidebarProps) => {
     { icon: Activity, label: 'Dashboard', path: '/patient-dashboard', active: true },
     { icon: Calendar, label: 'Schedule', path: '/patient-schedule' },
     { icon: CalendarCheck, label: 'Appointments', path: '/patient-appointments' },
+    { icon: Leaf, label: 'Therapy Portal', path: '/therapy-portal' },
     { icon: TrendingUp, label: 'Progress', path: '/progress' },
     { icon: MessageSquare, label: 'Feedback', path: '/feedback' },
     { icon: User, label: 'Profile', path: '/profile' },
@@ -50,11 +50,10 @@ const ResponsiveSidebar = ({ userType, userName, userRole }: SidebarProps) => {
     { icon: Activity, label: 'Dashboard', path: '/practitioner-dashboard', active: true },
     { icon: Users, label: 'Patients', path: '/practitioner-patients' },
     { icon: Calendar, label: 'Schedule', path: '/practitioner-schedule-new' },
+    { icon: Leaf, label: 'Therapy Management', path: '/therapy-management' },
     { icon: FileCheck, label: 'Appointment Requests', path: '/practitioner-requests' },
     { icon: MessageCircle, label: 'Chat', path: '/practitioner-chat' },
     { icon: BarChart3, label: 'Analytics', path: '/practitioner-analytics' },
-    { icon: MessageSquare, label: 'Feedback', path: '/practitioner-feedback' },
-    { icon: Brain, label: 'AI Insights', path: '/ai-insights' },
     { icon: User, label: 'Profile', path: '/practitioner-profile' },
   ];
 
@@ -68,9 +67,9 @@ const ResponsiveSidebar = ({ userType, userName, userRole }: SidebarProps) => {
         {/* Mobile Header */}
         <header className="fixed top-0 left-0 right-0 z-40 bg-card border-b border-border/50 backdrop-blur-lg bg-card/95">
           <div className="flex items-center justify-between p-4">
-            <div className="flex items-center space-x-2">
-              <Leaf className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold text-primary">AyurSutra</span>
+            <div className="flex items-center space-x-3">
+              <img src="/Ayursutra.png" alt="AyurSutra Logo" className="h-15 w-15 object-contain" />
+              <span className="text-xl font-bold text-primary">AyurSutra</span>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -104,9 +103,9 @@ const ResponsiveSidebar = ({ userType, userName, userRole }: SidebarProps) => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center space-x-2">
-                  <Leaf className="h-8 w-8 text-primary" />
-                  <span className="text-xl font-bold text-primary">AyurSutra</span>
+                <div className="flex items-center space-x-3">
+                  <img src="/Ayursutra.png" alt="AyurSutra Logo" className="h-12 w-12 object-contain" />
+                  <span className="text-2xl font-bold text-primary">AyurSutra</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
                   <X className="h-5 w-5" />
@@ -172,9 +171,9 @@ const ResponsiveSidebar = ({ userType, userName, userRole }: SidebarProps) => {
       {/* Logo */}
       <div className="p-4 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Leaf className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold text-primary">AyurSutra</span>
+          <div className="flex items-center space-x-3">
+            <img src="/Ayursutra.png" alt="AyurSutra Logo" className="h-12 w-12 object-contain" />
+            <span className="text-xl font-bold text-primary">AyurSutra</span>
           </div>
           <NotificationBell onNotificationClick={() => navigate('/notifications')} />
         </div>

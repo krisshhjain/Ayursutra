@@ -12,9 +12,12 @@ import practitionerRoutes from './routes/practitioner.js';
 import patientRoutes from './routes/patient.js';
 import systemRoutes from './routes/system.js';
 import appointmentRoutes from './routes/appointments.js';
+import unavailableDatesRoutes from './routes/unavailableDates.js';
 import notificationRoutes from './routes/notifications.js';
 import reviewRoutes from './routes/reviews.js';
 import chatRoutes from './routes/chats.js';
+import therapyRoutes from './routes/therapy.js';
+import practitionersRoutes from './routes/practitioners.js'; // Corrected import
 import './scripts/notificationScheduler.js'; // Start notification scheduler
 
 // Get the directory name for ES modules
@@ -99,9 +102,12 @@ app.use('/api/practitioner', practitionerRoutes);
 app.use('/api/patient', patientRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/unavailable-dates', unavailableDatesRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/therapy', therapyRoutes);
+app.use('/api/practitioners', practitionersRoutes); // Corrected usage
 
 // 404 handler
 app.use('*', (req, res) => {

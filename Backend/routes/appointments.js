@@ -216,6 +216,7 @@ router.post('/', authorize('patient'), async (req, res) => {
       practitionerId,
       patientId,
       date,
+      time: startTime.toTimeString().substring(0, 5), // Extract HH:MM format
       slotStartUtc: startTime,
       slotEndUtc: endTime,
       duration: slotDuration,
@@ -495,8 +496,11 @@ router.patch('/:id', async (req, res) => {
         console.log(`🚫 Cancelled ${cancelResult.modifiedCount} pending notifications for appointment ${appointment._id}`);
       }
 
-      // Send cancellation notification
+      // Send immediate cancellation notification to the other party
       const recipientId = isPatient ? appointment.practitionerId._id : appointment.patientId._id;
+      const recipientModel = isPatient ? 'Practitioner' : 'Patient';
+
+      // Send legacy in-app notification
       await sendNotification({
         toUserId: recipientId,
         channel: 'in-app',
@@ -507,6 +511,51 @@ router.patch('/:id', async (req, res) => {
           reason: reason || 'No reason provided'
         }
       });
+
+      // If practitioner is cancelling, send immediate email to patient
+      if (isPractitioner) {
+        try {
+          const cancellationNotificationData = {
+            recipientId: appointment.patientId._id,
+            recipientModel: 'Patient',
+            appointmentId: appointment._id,
+            channels: ['in-app', 'email'],
+            templateId: 'appointment-cancelled',
+            variables: {
+              patientName: `${appointment.patientId.firstName} ${appointment.patientId.lastName}`,
+              practitionerName: `${appointment.practitionerId.firstName} ${appointment.practitionerId.lastName}`,
+              date: appointment.date,
+              time: appointment.slotStartUtc.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+              therapy: appointment.notes?.split(' | Cancelled')[0] || 'Consultation',
+              reason: reason || 'Schedule adjustment',
+              clinicName: 'AyurSutra Wellness Center',
+              appointmentLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient-schedule`,
+              unsubscribeLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/notifications/unsubscribe`
+            },
+            scheduledAt: new Date(), // Send immediately
+            createdBy: userId
+          };
+
+          const created = await notificationService.createNotification(cancellationNotificationData);
+          if (created.success && created.notification) {
+            // Populate recipient to ensure email address is available
+            const notif = await created.notification.populate('recipientId');
+            if (notif) {
+              const processResult = await notificationService.processNotification(notif);
+              if (processResult.success) {
+                console.log(`✅ Sent immediate cancellation email to patient ${appointment.patientId.firstName} ${appointment.patientId.lastName}`);
+              } else {
+                console.error('❌ Failed to send cancellation email:', processResult.error);
+              }
+            }
+          } else {
+            console.error('❌ Failed to create cancellation notification:', created.error);
+          }
+        } catch (emailError) {
+          console.error('❌ Error sending cancellation email notification:', emailError);
+          // Don't fail the cancellation if email fails
+        }
+      }
 
       res.status(200).json({
         success: true,
@@ -633,6 +682,51 @@ router.patch('/:id', async (req, res) => {
             reason: reason || 'Schedule adjustment'
           }
         });
+
+        // Send immediate reschedule email notification to patient
+        try {
+          const rescheduleNotificationData = {
+            recipientId: appointment.patientId._id,
+            recipientModel: 'Patient',
+            appointmentId: appointment._id,
+            channels: ['in-app', 'email'],
+            templateId: 'appointment-rescheduled',
+            variables: {
+              patientName: `${appointment.patientId.firstName} ${appointment.patientId.lastName}`,
+              practitionerName: `${appointment.practitionerId.firstName} ${appointment.practitionerId.lastName}`,
+              oldDate,
+              oldTime,
+              newDate,
+              newTime: newStartTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+              therapy: appointment.notes?.split(' | Rescheduled')[0] || 'Consultation',
+              reason: reason || 'Schedule adjustment',
+              clinicName: 'AyurSutra Wellness Center',
+              appointmentLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient-schedule`,
+              unsubscribeLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/notifications/unsubscribe`
+            },
+            scheduledAt: new Date(), // Send immediately
+            createdBy: userId
+          };
+
+          const created = await notificationService.createNotification(rescheduleNotificationData);
+          if (created.success && created.notification) {
+            // Populate recipient to ensure email address is available
+            const notif = await created.notification.populate('recipientId');
+            if (notif) {
+              const processResult = await notificationService.processNotification(notif);
+              if (processResult.success) {
+                console.log(`✅ Sent immediate reschedule email to patient ${appointment.patientId.firstName} ${appointment.patientId.lastName}`);
+              } else {
+                console.error('❌ Failed to send reschedule email:', processResult.error);
+              }
+            }
+          } else {
+            console.error('❌ Failed to create reschedule notification:', created.error);
+          }
+        } catch (emailError) {
+          console.error('❌ Error sending reschedule email notification:', emailError);
+          // Don't fail the reschedule if email fails
+        }
 
         res.status(200).json({
           success: true,

@@ -229,7 +229,7 @@ const PatientDashboard = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <BookOpen className="h-5 w-5 text-healing" />
-                      <span>AI Precaution Tips</span>
+                      <span>Precaution Tips</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

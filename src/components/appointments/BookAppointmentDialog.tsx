@@ -18,6 +18,7 @@ import {
   type TimeSlot 
 } from '@/lib/api/appointments';
 import { reviewAPI, type ReviewStats } from '@/lib/api/reviews';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface BookAppointmentDialogProps {
   open: boolean;
@@ -36,26 +37,34 @@ const BookAppointmentDialog = ({ open, onOpenChange, onSuccess }: BookAppointmen
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [genderFilter, setGenderFilter] = useState<'any' | 'female'>('any');
   const { toast } = useToast();
 
   // Reset state when dialog opens/closes
   useEffect(() => {
     if (open) {
-      loadPractitioners();
       setStep('practitioner');
       setSelectedPractitioner(null);
       setSelectedDate('');
       setSelectedSlot(null);
       setAvailability(null);
       setNotes('');
+      setGenderFilter('any');
     }
   }, [open]);
+
+  // Load practitioners when dialog is open or filter changes
+  useEffect(() => {
+    if (open) {
+      loadPractitioners();
+    }
+  }, [genderFilter, open]);
 
   // Load practitioners and their review stats
   const loadPractitioners = async () => {
     try {
       setLoading(true);
-      const practitionerData = await appointmentAPI.getPractitioners();
+      const practitionerData = await appointmentAPI.getPractitioners(genderFilter);
       setPractitioners(practitionerData);
       
       // Load review stats for each practitioner
@@ -213,6 +222,24 @@ const BookAppointmentDialog = ({ open, onOpenChange, onSuccess }: BookAppointmen
                 </p>
               </div>
 
+              <div className="flex items-center space-x-4">
+                <Label className="text-sm font-medium">Filter by gender:</Label>
+                <RadioGroup
+                  value={genderFilter}
+                  onValueChange={(value) => setGenderFilter(value as 'any' | 'female')}
+                  className="flex items-center"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="any" id="any" />
+                    <Label htmlFor="any">Any</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="female" id="female" />
+                    <Label htmlFor="female">Female</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin" />
@@ -266,6 +293,14 @@ const BookAppointmentDialog = ({ open, onOpenChange, onSuccess }: BookAppointmen
                       </Card>
                     );
                   })}
+                  {practitioners.length === 0 && !loading && (
+                    <Card className="p-4 text-center">
+                      <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        No practitioners found for the selected filter.
+                      </p>
+                    </Card>
+                  )}
                 </div>
               )}
 

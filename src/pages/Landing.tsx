@@ -51,7 +51,7 @@ const Landing = () => {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-2"
             >
-              <Leaf className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <img src="/Ayursutra.png" alt="AyurSutra Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" />
               <span className="text-xl sm:text-2xl font-bold text-primary">AyurSutra</span>
             </motion.div>
             
@@ -250,7 +250,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <Leaf className="h-6 w-6 text-primary" />
+              <img src="/Ayursutra.png" alt="AyurSutra Logo" className="h-8 w-8 object-contain" />
               <span className="text-xl font-bold text-primary">AyurSutra</span>
             </div>
             <p className="text-muted-foreground">

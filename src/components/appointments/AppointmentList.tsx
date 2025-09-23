@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Calendar, 
@@ -10,11 +11,17 @@ import {
   AlertCircle,
   Loader2,
   Star,
-  Check
+  Check,
+  Plus,
+  Edit
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +37,9 @@ import RatingComponent from '@/components/ui/RatingComponent';
 import { 
   appointmentAPI, 
   appointmentUtils, 
-  type Appointment 
+  type Appointment,
+  type SlotAvailability,
+  type TimeSlot 
 } from '@/lib/api/appointments';
 import { buildApiUrl, getAuthHeaders } from '@/lib/api/config';
 
@@ -43,16 +52,114 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard = ({ appointment, onUpdate, userType = 'patient' }: AppointmentCardProps) => {
+  const navigate = useNavigate();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [showTherapyDialog, setShowTherapyDialog] = useState(false);
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
   const { toast } = useToast();
+
+  // Reschedule state
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [availability, setAvailability] = useState<SlotAvailability | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [rescheduleReason, setRescheduleReason] = useState('');
 
   const canModify = appointmentUtils.canModifyAppointment(appointment);
   const isPractitioner = userType === 'practitioner';
   const canConfirm = isPractitioner && appointment.status === 'requested';
   const canComplete = isPractitioner && appointment.status === 'confirmed';
+
+  // Load available slots for rescheduling
+  const loadAvailableSlots = async (date: string) => {
+    if (!date) return;
+    
+    try {
+      setLoadingSlots(true);
+      const practitionerId = typeof appointment.practitionerId === 'string' 
+        ? appointment.practitionerId 
+        : appointment.practitionerId._id;
+      const slots = await appointmentAPI.getAvailability(practitionerId, date);
+      setAvailability(slots);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load available slots',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  // Handle reschedule
+  const handleReschedule = async () => {
+    if (!selectedSlot || !selectedDate) {
+      toast({
+        title: 'Error',
+        description: 'Please select a new date and time',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await appointmentAPI.updateAppointment(appointment._id, {
+        action: 'reschedule',
+        newDate: selectedDate,
+        newSlotStartUtc: selectedSlot.startTime,
+        reason: rescheduleReason || 'Rescheduled by practitioner'
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Appointment rescheduled successfully',
+      });
+
+      setShowRescheduleDialog(false);
+      setSelectedDate('');
+      setSelectedSlot(null);
+      setAvailability(null);
+      setRescheduleReason('');
+      onUpdate?.();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to reschedule appointment',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate date options (next 30 days)
+  const getDateOptions = () => {
+    const dates = [];
+    const today = new Date();
+    
+    for (let i = 1; i <= 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      // Skip Sundays (day 0)
+      if (date.getDay() !== 0) {
+        const dateStr = date.toISOString().split('T')[0];
+        const displayDate = date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        });
+        dates.push({ value: dateStr, label: displayDate });
+      }
+    }
+    
+    return dates;
+  };
 
   // Check if patient has already reviewed this appointment
   useEffect(() => {
@@ -77,6 +184,67 @@ const AppointmentCard = ({ appointment, onUpdate, userType = 'patient' }: Appoin
     
     checkExistingReview();
   }, [appointment._id, appointment.status, isPractitioner]);
+
+  // Handle adding patient to Panchakarma therapy program
+  const handleAddToTherapy = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      // Debug logs
+      console.log('Appointment data:', appointment);
+      console.log('Patient ID:', appointment.patientId?._id || appointment.patientId);
+      console.log('User data:', user);
+      console.log('Practitioner ID:', user._id); // Changed from user.userId to user._id
+      
+      const requestBody = {
+        patientId: appointment.patientId?._id || appointment.patientId,
+        programType: 'panchakarma', // Default to Panchakarma therapy
+        primaryPractitionerId: user._id, // Changed from user.userId to user._id
+        startDate: new Date().toISOString(),
+        notes: `Panchakarma therapy program created from appointment on ${new Date().toLocaleDateString()}`
+      };
+      
+      console.log('Request body being sent:', requestBody);
+      
+      const response = await fetch(`${API_BASE_URL}/therapy/programs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+      console.log('API Response:', data);
+      
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: 'Patient successfully added to Panchakarma therapy program!',
+        });
+        setShowTherapyDialog(false);
+        // Just close the dialog and show success - no navigation needed
+      } else {
+        toast({
+          title: 'Error',
+          description: data.message || 'Failed to add patient to therapy program',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error adding patient to therapy:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add patient to therapy program',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle appointment completion (practitioner only)
   const handleComplete = async () => {
@@ -258,29 +426,45 @@ const AppointmentCard = ({ appointment, onUpdate, userType = 'patient' }: Appoin
               )}
               
               {canComplete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleComplete}
-                  disabled={loading}
-                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                  title="Mark as Complete"
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              )}
-              
-              {canModify && (
                 <>
                   <Button
                     variant="ghost"
                     size="sm"
-                    disabled={true}
-                    className="h-8 w-8 p-0 text-gray-400"
-                    title="Reschedule (Coming Soon)"
+                    onClick={handleComplete}
+                    disabled={loading}
+                    className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    title="Mark as Complete"
                   >
-                    <Calendar className="h-4 w-4" />
+                    <Check className="h-4 w-4" />
                   </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowTherapyDialog(true)}
+                    disabled={loading}
+                    className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    title="Add to Therapy Program"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              
+              {canModify && (
+                <>
+                  {/* Only show reschedule for practitioners */}
+                  {isPractitioner && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowRescheduleDialog(true)}
+                      className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      title="Reschedule Appointment"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
                   
                   <Button
                     variant="ghost"
@@ -356,6 +540,125 @@ const AppointmentCard = ({ appointment, onUpdate, userType = 'patient' }: Appoin
         )}
       </Card>
 
+      {/* Reschedule Dialog */}
+      <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reschedule Appointment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* Current Appointment Info */}
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm font-medium">Current Appointment:</p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Patient:</strong> {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Current Date:</strong> {appointmentUtils.formatDate(appointment.date)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Current Time:</strong> {appointmentUtils.toLocalTimeString(appointment.slotStartUtc)} - {appointmentUtils.toLocalTimeString(appointment.slotEndUtc)}
+              </p>
+            </div>
+
+            {/* Date Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="reschedule-date">Select New Date</Label>
+              <Select 
+                value={selectedDate} 
+                onValueChange={(value) => {
+                  setSelectedDate(value);
+                  setSelectedSlot(null);
+                  loadAvailableSlots(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a date" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getDateOptions().map((date) => (
+                    <SelectItem key={date.value} value={date.value}>
+                      {date.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Time Selection */}
+            {selectedDate && (
+              <div className="space-y-2">
+                <Label htmlFor="reschedule-time">Select New Time</Label>
+                {loadingSlots ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-sm">Loading available slots...</span>
+                  </div>
+                ) : availability?.slots.length ? (
+                  <Select 
+                    value={selectedSlot ? `${selectedSlot.startTime}-${selectedSlot.endTime}` : ''} 
+                    onValueChange={(value) => {
+                      const slot = availability.slots.find(s => `${s.startTime}-${s.endTime}` === value);
+                      setSelectedSlot(slot || null);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a time slot" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availability.slots
+                        .filter(slot => slot.available)
+                        .map((slot, index) => (
+                          <SelectItem key={index} value={`${slot.startTime}-${slot.endTime}`}>
+                            {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(slot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm text-muted-foreground py-2">No available slots for this date</p>
+                )}
+              </div>
+            )}
+
+            {/* Reason */}
+            <div className="space-y-2">
+              <Label htmlFor="reschedule-reason">Reason (Optional)</Label>
+              <Textarea
+                id="reschedule-reason"
+                value={rescheduleReason}
+                onChange={(e) => setRescheduleReason(e.target.value)}
+                placeholder="Reason for rescheduling..."
+                className="min-h-[80px]"
+              />
+            </div>
+            
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowRescheduleDialog(false);
+                  setSelectedDate('');
+                  setSelectedSlot(null);
+                  setAvailability(null);
+                  setRescheduleReason('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleReschedule}
+                disabled={loading || !selectedSlot || !selectedDate}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Reschedule Appointment
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Rating Dialog */}
       <AlertDialog open={showRatingDialog} onOpenChange={setShowRatingDialog}>
         <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -388,6 +691,54 @@ const AppointmentCard = ({ appointment, onUpdate, userType = 'patient' }: Appoin
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Panchakarma Therapy Confirmation Dialog */}
+      <Dialog open={showTherapyDialog} onOpenChange={setShowTherapyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Patient to Panchakarma Therapy</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                <strong>Patient:</strong> {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Current Appointment:</strong> {appointment.practitionerId?.specialization || 'Consultation'}
+              </p>
+            </div>
+            
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <h4 className="font-medium text-green-800">Complete Panchakarma Therapy Program</h4>
+              </div>
+              <p className="text-sm text-green-700">
+                This will enroll the patient in a comprehensive Panchakarma therapy program including 
+                all traditional procedures: Vamana, Virechana, Basti, Nasya, and Raktamokshana. 
+                The doctor can then manage and schedule each procedure individually.
+              </p>
+            </div>
+            
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowTherapyDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddToTherapy}
+                className="bg-green-600 hover:bg-green-700"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Add to Panchakarma Therapy
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Cancel Confirmation Dialog */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>

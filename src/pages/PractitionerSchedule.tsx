@@ -36,10 +36,15 @@ const PractitionerSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [completingAppointment, setCompletingAppointment] = useState(null);
   const [sessionNotes, setSessionNotes] = useState('');
+  const [showTherapyOptions, setShowTherapyOptions] = useState(false);
+  const [selectedAppointmentForTherapy, setSelectedAppointmentForTherapy] = useState(null);
+  const [therapyTemplates, setTherapyTemplates] = useState([]);
+  const [selectedTherapy, setSelectedTherapy] = useState('');
 
   useEffect(() => {
     fetchPractitionerInfo();
     fetchSchedule();
+    fetchTherapyTemplates();
   }, [selectedDate, viewMode]);
 
   const fetchPractitionerInfo = async () => {
@@ -60,6 +65,24 @@ const PractitionerSchedule = () => {
       }
     } catch (error) {
       console.error('Error fetching practitioner info:', error);
+    }
+  };
+
+  const fetchTherapyTemplates = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/therapy/templates', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setTherapyTemplates(data.success ? data.data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching therapy templates:', error);
     }
   };
 
@@ -141,6 +164,47 @@ const PractitionerSchedule = () => {
     } catch (error) {
       console.error('Error completing appointment:', error);
       toast.error('Failed to complete appointment');
+    }
+  };
+
+  const handleAddToTherapy = async () => {
+    if (!selectedAppointmentForTherapy || !selectedTherapy) {
+      toast.error('Please select a therapy program');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      const response = await fetch('http://localhost:5000/api/therapy/programs', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientId: selectedAppointmentForTherapy.patientId,
+          therapyTemplateId: selectedTherapy,
+          primaryPractitionerId: user.userId,
+          startDate: new Date().toISOString(),
+          notes: `Created from appointment completion on ${new Date().toLocaleDateString()}`
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Patient successfully added to therapy program!');
+        setShowTherapyOptions(false);
+        setSelectedAppointmentForTherapy(null);
+        setSelectedTherapy('');
+      } else {
+        toast.error(data.message || 'Failed to add patient to therapy program');
+      }
+    } catch (error) {
+      console.error('Error adding patient to therapy:', error);
+      toast.error('Failed to add patient to therapy program');
     }
   };
 
@@ -419,11 +483,24 @@ const PractitionerSchedule = () => {
                         Reschedule
                       </Button>
                       {appointment.status === 'confirmed' && (
-                        <Dialog 
-                          open={completingAppointment === appointment.id} 
-                          onOpenChange={(open) => !open && setCompletingAppointment(null)}
-                        >
-                          <DialogTrigger asChild>
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedAppointmentForTherapy(appointment);
+                              setShowTherapyOptions(true);
+                            }}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add to Therapy
+                          </Button>
+                          <Dialog 
+                            open={completingAppointment === appointment.id} 
+                            onOpenChange={(open) => !open && setCompletingAppointment(null)}
+                          >
+                            <DialogTrigger asChild>
                             <Button 
                               variant="default" 
                               size="sm"
@@ -468,6 +545,17 @@ const PractitionerSchedule = () => {
                                   Cancel
                                 </Button>
                                 <Button 
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedAppointmentForTherapy(appointment);
+                                    setShowTherapyOptions(true);
+                                  }}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add to Therapy
+                                </Button>
+                                <Button 
                                   onClick={() => handleCompleteAppointment(appointment.id)}
                                   className="bg-green-600 hover:bg-green-700"
                                 >
@@ -478,6 +566,7 @@ const PractitionerSchedule = () => {
                             </div>
                           </DialogContent>
                         </Dialog>
+                        </>
                       )}
                       {appointment.status === 'completed' && (
                         <Badge variant="secondary" className="bg-blue-100 text-blue-700">
@@ -549,6 +638,18 @@ const PractitionerSchedule = () => {
                     </div>
                     
                     <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAppointmentForTherapy(appointment);
+                          setShowTherapyOptions(true);
+                        }}
+                        className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add to Therapy
+                      </Button>
                       <Dialog 
                         open={completingAppointment === appointment.id} 
                         onOpenChange={(open) => !open && setCompletingAppointment(null)}
@@ -596,6 +697,17 @@ const PractitionerSchedule = () => {
                                 Cancel
                               </Button>
                               <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedAppointmentForTherapy(appointment);
+                                  setShowTherapyOptions(true);
+                                }}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add to Therapy
+                              </Button>
+                              <Button
                                 onClick={() => handleCompleteAppointment(appointment.id)}
                                 className="flex-1 bg-green-600 hover:bg-green-700"
                               >
@@ -615,6 +727,59 @@ const PractitionerSchedule = () => {
           )}
         </main>
       </div>
+
+      {/* Therapy Selection Dialog */}
+      <Dialog open={showTherapyOptions} onOpenChange={setShowTherapyOptions}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Patient to Therapy Program</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {selectedAppointmentForTherapy && (
+              <div className="space-y-2">
+                <Label>Patient: {selectedAppointmentForTherapy.patient}</Label>
+                <Label>Current Appointment: {selectedAppointmentForTherapy.therapy}</Label>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="therapy-select">Select Therapy Program</Label>
+              <Select value={selectedTherapy} onValueChange={setSelectedTherapy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose therapy program" />
+                </SelectTrigger>
+                <SelectContent>
+                  {therapyTemplates.map(template => (
+                    <SelectItem key={template._id} value={template._id}>
+                      {template.name} - {template.category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowTherapyOptions(false);
+                  setSelectedAppointmentForTherapy(null);
+                  setSelectedTherapy('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddToTherapy}
+                className="bg-blue-600 hover:bg-blue-700"
+                disabled={!selectedTherapy}
+              >
+                Add to Therapy Program
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {isMobile && <MobileNavigation userType="practitioner" />}
     </div>

@@ -11,7 +11,8 @@ import {
   PlusCircle,
   BarChart3,
   CalendarCheck,
-  MessageCircle
+  MessageCircle,
+  Leaf
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -34,7 +35,7 @@ const MobileNavigation = ({ userType }: MobileNavigationProps) => {
   const patientNavItems: NavItem[] = [
     { icon: Home, label: 'Dashboard', path: '/patient-dashboard' },
     { icon: Calendar, label: 'Schedule', path: '/patient-schedule' },
-    { icon: CalendarCheck, label: 'Appointments', path: '/patient-appointments' },
+    { icon: Leaf, label: 'Therapy', path: '/therapy-portal' },
     { icon: TrendingUp, label: 'Progress', path: '/progress' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
@@ -42,7 +43,7 @@ const MobileNavigation = ({ userType }: MobileNavigationProps) => {
   const practitionerNavItems: NavItem[] = [
     { icon: Home, label: 'Dashboard', path: '/practitioner-dashboard' },
     { icon: Calendar, label: 'Schedule', path: '/practitioner-schedule' },
-    { icon: MessageCircle, label: 'Chat', path: '/practitioner-chat' },
+    { icon: Leaf, label: 'Therapy', path: '/therapy-management' },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];

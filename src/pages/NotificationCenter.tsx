@@ -176,12 +176,17 @@ const NotificationCenter = () => {
   const getNotificationIcon = (templateId: string) => {
     switch (templateId) {
       case '24h-before':
+        return Calendar;
       case '2h-before':
-      case 'on-time':
         return Clock;
+      case 'on-time':
+        return Bell;
       case 'immediate-post':
-      case '48h-post':
-        return AlertCircle;
+        return MessageSquare;
+      case 'appointment-confirmed':
+        return Check;
+      case 'appointment-request':
+        return User;
       default: 
         return Bell;
     }
@@ -190,15 +195,17 @@ const NotificationCenter = () => {
   const getNotificationTitle = (templateId: string, variables: Record<string, any>) => {
     switch (templateId) {
       case '24h-before':
-        return 'Therapy Reminder - Tomorrow';
+        return 'Therapy Session Tomorrow';
       case '2h-before':
-        return 'Therapy Starting Soon';
+        return 'Session Starting Soon';
       case 'on-time':
-        return 'Your Therapy Begins Now';
+        return 'Session Time - Please Proceed';
       case 'immediate-post':
-        return 'Post-Therapy Care Instructions';
-      case '48h-post':
-        return 'Follow-up Care Reminder';
+        return 'Session Complete - Care Instructions';
+      case 'appointment-confirmed':
+        return 'Appointment Confirmed';
+      case 'appointment-request':
+        return 'New Appointment Request';
       default:
         return 'Notification';
     }
@@ -211,18 +218,23 @@ const NotificationCenter = () => {
       (appointmentId?.practitionerId ? 
         `${appointmentId.practitionerId.firstName} ${appointmentId.practitionerId.lastName}` : 
         'your practitioner');
+    const time = variables.time || 'the scheduled time';
+    const date = variables.date || 'the scheduled date';
+    const patientName = variables.patientName || 'A patient';
 
     switch (templateId) {
       case '24h-before':
-        return `Your ${therapy} with ${practitionerName} is scheduled for tomorrow. Please prepare according to the pre-therapy guidelines.`;
+        return `Your ${therapy} with ${practitionerName} is scheduled for tomorrow at ${time}. Please prepare according to the pre-therapy guidelines: drink warm water, avoid heavy meals, and wear comfortable clothing.`;
       case '2h-before':
-        return `Your ${therapy} session begins in 2 hours. Please avoid heavy meals and arrive 15 minutes early.`;
+        return `Your ${therapy} session begins in 2 hours at ${time}. Please start your final preparations: drink warm water now, avoid eating, and arrive 15 minutes early.`;
       case 'on-time':
-        return `Your ${therapy} session with ${practitionerName} is starting now. Please proceed to the therapy room.`;
+        return `Your ${therapy} session with ${practitionerName} is starting now. Please proceed to the therapy room for your treatment.`;
       case 'immediate-post':
-        return `Your ${therapy} session is complete. Please follow the post-therapy care instructions for optimal benefits.`;
-      case '48h-post':
-        return `It's been 48 hours since your ${therapy}. Please continue following the prescribed care routine and stay hydrated.`;
+        return `Your ${therapy} session is complete. Please follow the post-therapy care instructions: rest, stay hydrated with warm water, avoid cold exposure, and eat light meals for the next few hours.`;
+      case 'appointment-confirmed':
+        return `Great news! Your ${therapy} appointment with ${practitionerName} on ${date} at ${time} has been confirmed. You'll receive reminder notifications as your session approaches.`;
+      case 'appointment-request':
+        return `${patientName} has requested a ${therapy} session on ${date} at ${time}. Please review and approve this appointment request.`;
       default:
         return variables.message || 'You have a new notification';
     }

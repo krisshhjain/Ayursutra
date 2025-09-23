@@ -91,6 +91,11 @@ const patientSchema = new mongoose.Schema({
 // Practitioner-specific fields
 const practitionerSchema = new mongoose.Schema({
   ...userSchema.obj,
+  gender: {
+    type: String,
+    required: [true, 'Gender is required'],
+    enum: ['male', 'female', 'other']
+  },
   specialization: {
     type: String,
     required: [true, 'Specialization is required'],

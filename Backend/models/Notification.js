@@ -24,8 +24,7 @@ const notificationSchema = new mongoose.Schema({
   recipientId: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'recipientModel',
-    required: [true, 'Recipient ID is required'],
-    index: true
+    required: [true, 'Recipient ID is required']
   },
   recipientModel: {
     type: String,
@@ -36,8 +35,7 @@ const notificationSchema = new mongoose.Schema({
   appointmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Appointment',
-    required: [true, 'Appointment ID is required'],
-    index: true
+    required: [true, 'Appointment ID is required']
   },
   channels: [{
     type: String,
@@ -46,7 +44,7 @@ const notificationSchema = new mongoose.Schema({
   }],
   templateId: {
     type: String,
-    enum: ['24h-before', '2h-before', 'on-time', 'immediate-post', '48h-post', 'appointment-confirmed', 'appointment-request', 'appointment-completed'],
+    enum: ['24h-before', '2h-before', 'on-time', 'immediate-post', '48h-post', 'appointment-confirmed', 'appointment-request', 'appointment-completed', 'appointment-cancelled', 'appointment-rescheduled'],
     required: [true, 'Template ID is required']
   },
   variables: {

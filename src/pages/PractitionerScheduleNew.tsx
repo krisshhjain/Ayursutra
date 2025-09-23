@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import ResponsiveSidebar from '@/components/navigation/ResponsiveSidebar';
 import MobileNavigation from '@/components/navigation/MobileNavigation';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
+import AppointmentSettingsPopup from '@/components/AppointmentSettingsPopup';
 import { useMediaQuery } from '@mui/material';
 import { getUser } from '@/lib/auth';
 
@@ -15,6 +16,7 @@ const PractitionerSchedule = () => {
   const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'all-confirmed'>('list');
   const [filterStatus, setFilterStatus] = useState<'all' | 'requested' | 'confirmed' | 'completed'>('all');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showSettingsPopup, setShowSettingsPopup] = useState(false);
   
   // Get current user info
   const currentUser = getUser();
@@ -81,7 +83,11 @@ const PractitionerSchedule = () => {
                 </Button>
               </div>
 
-              <Button variant="outline" className="gap-2">
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => setShowSettingsPopup(true)}
+              >
                 <Settings className="h-4 w-4" />
                 {!isMobile && 'Availability Settings'}
               </Button>
@@ -310,6 +316,12 @@ const PractitionerSchedule = () => {
       </div>
 
       {isMobile && <MobileNavigation userType="practitioner" />}
+      
+      {/* Appointment Settings Popup */}
+      <AppointmentSettingsPopup 
+        isOpen={showSettingsPopup}
+        onClose={() => setShowSettingsPopup(false)}
+      />
     </div>
   );
 };

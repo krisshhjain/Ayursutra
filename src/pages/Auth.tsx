@@ -203,7 +203,7 @@ const Auth = () => {
           </Button>
           
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Leaf className="h-8 w-8 text-primary" />
+            <img src="/Ayursutra.png" alt="AyurSutra Logo" className="h-10 w-10 object-contain" />
             <span className="text-2xl font-bold text-primary">AyurSutra</span>
           </div>
           

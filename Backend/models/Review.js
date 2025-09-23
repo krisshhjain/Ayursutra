@@ -17,8 +17,7 @@ const reviewSchema = new mongoose.Schema({
   practitionerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Practitioner',
-    required: [true, 'Practitioner ID is required'],
-    index: true
+    required: [true, 'Practitioner ID is required']
   },
   rating: {
     type: Number,

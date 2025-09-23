@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import DoshaChatbot from "@/components/DoshaChatbot";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import PatientDashboard from "./pages/PatientDashboard";
@@ -36,6 +37,10 @@ import AdminNotifications from "./pages/AdminNotifications";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import AdminActivityLogs from "./pages/AdminActivityLogs";
+import TherapyManagement from "./pages/TherapyManagement";
+import PatientTherapyPortal from "./pages/PatientTherapyPortal";
+import PatientFeedbackForm from "./pages/PatientFeedbackForm";
+import TherapyDashboard from "./pages/TherapyDashboard";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +108,11 @@ const App = () => (
             <Route path="/therapy-details" element={<TherapyDetails />} />
             <Route path="/patient-schedule" element={<PatientSchedule />} />
             <Route path="/patient-appointments" element={<PatientAppointments />} />
+            <Route path="/therapy-portal" element={<PatientTherapyPortal />} />
+            <Route path="/therapy-management" element={<TherapyManagement />} />
+            <Route path="/therapy/:programId" element={<TherapyDashboard userType="patient" />} />
+            <Route path="/practitioner/therapy/:programId" element={<TherapyDashboard userType="practitioner" />} />
+            <Route path="/patient/therapy/:programId/procedures/:procedureType/feedback" element={<PatientFeedbackForm />} />
             <Route path="/feedback" element={<FeedbackForm />} />
             <Route path="/profile" element={<PatientProfile />} />
             <Route path="/appointment-demo" element={<AppointmentDemo />} />
@@ -120,6 +130,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <DoshaChatbot />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

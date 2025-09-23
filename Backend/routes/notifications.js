@@ -1,22 +1,25 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import NotificationService from '../services/NotificationService.js';
+import TherapyNotificationService from '../services/TherapyNotificationService.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 const notificationService = new NotificationService();
+const therapyNotificationService = new TherapyNotificationService();
 
 // Apply authentication to all routes
 router.use(authenticate);
 
-// Get unread notifications for the authenticated user
+// Get unread notifications for the authenticated user (using focused therapy notifications)
 router.get('/', async (req, res) => {
   try {
     const { status, limit = 20 } = req.query;
     const userId = req.user._id;
 
     if (status === 'unread') {
-      const result = await notificationService.getUnreadNotifications(userId, parseInt(limit));
+      // Use the focused therapy notification service for better filtering
+      const result = await therapyNotificationService.getUnreadNotifications(userId, parseInt(limit));
       
       if (!result.success) {
         return res.status(400).json({ success: false, message: result.error });
@@ -29,11 +32,12 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Get all notifications for user (with pagination)
+    // Get all notifications for user (with pagination) - filter out vague notifications
     const Notification = (await import('../models/Notification.js')).default;
     const notifications = await Notification.find({ 
       recipientId: userId,
-      status: 'sent' // Only show sent notifications to users
+      status: 'sent',
+      templateId: { $in: ['24h-before', '2h-before', 'on-time', 'immediate-post', 'appointment-confirmed', 'appointment-request'] }
     })
       .sort({ sentAt: -1, scheduledAt: -1 })
       .limit(parseInt(limit))
@@ -49,13 +53,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Mark notification as read
+// Mark notification as read (use therapy notification service)
 router.patch('/:id/read', async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
 
-    const result = await notificationService.markAsRead(id, userId);
+    const result = await therapyNotificationService.markAsRead(id, userId);
     
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.error });
@@ -124,22 +128,21 @@ router.post('/appointment/:appointmentId', authorize(['practitioner']), async (r
       return res.status(404).json({ success: false, message: 'Appointment not found' });
     }
 
+    // Use the focused therapy notification service instead of the old one
     const appointmentData = {
       appointmentId: appointment._id,
       patientId: appointment.patientId._id,
       practitionerId: appointment.practitionerId._id,
-      date: appointment.date,
-      slotStartUtc: appointment.slotStartUtc,
-      therapy: appointment.therapy || 'Ayurvedic Therapy',
+      appointmentDate: appointment.date,
+      appointmentTime: appointment.slotStartUtc ? new Date(appointment.slotStartUtc).toTimeString().slice(0, 5) : '10:00',
+      therapyType: appointment.therapy || 'Ayurvedic Therapy',
       practitionerName: `${appointment.practitionerId.firstName} ${appointment.practitionerId.lastName}`,
       patientName: `${appointment.patientId.firstName} ${appointment.patientId.lastName}`,
-      duration: appointment.duration
+      duration: appointment.duration || 60
     };
 
-    const result = await notificationService.createAppointmentNotifications(
-      appointmentData,
-      userPreferences
-    );
+    // Create focused therapy notifications (only the 4 specific ones)
+    const result = await therapyNotificationService.createTherapyNotifications(appointmentData);
     
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.error });
@@ -147,11 +150,96 @@ router.post('/appointment/:appointmentId', authorize(['practitioner']), async (r
 
     res.status(201).json({
       success: true,
-      message: `Created ${result.count} notifications for appointment`,
-      notifications: result.notifications
+      message: result.message,
+      notifications: result.notifications,
+      count: result.count
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Create focused therapy notifications endpoint
+router.post('/therapy', authorize(['practitioner']), async (req, res) => {
+  try {
+    const {
+      appointmentId,
+      patientId,
+      appointmentDate,
+      appointmentTime,
+      therapyType,
+      practitionerName,
+      patientName,
+      duration
+    } = req.body;
+
+    // Validate required fields
+    if (!appointmentId || !patientId || !appointmentDate || !appointmentTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: appointmentId, patientId, appointmentDate, appointmentTime'
+      });
+    }
+
+    const appointmentData = {
+      appointmentId,
+      patientId,
+      practitionerId: req.user._id,
+      appointmentDate,
+      appointmentTime,
+      therapyType: therapyType || 'Ayurvedic Therapy',
+      practitionerName: practitionerName || req.user.name || 'Dr. Practitioner',
+      patientName: patientName || 'Patient',
+      duration: duration || 60
+    };
+
+    const result = await therapyNotificationService.createTherapyNotifications(appointmentData);
+    
+    if (result.success) {
+      res.status(201).json({
+        success: true,
+        data: result.notifications,
+        count: result.count,
+        message: result.message
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Error creating therapy notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create therapy notifications'
+    });
+  }
+});
+
+// Clean up vague notifications endpoint
+router.delete('/cleanup-vague/:appointmentId', authorize(['practitioner', 'admin']), async (req, res) => {
+  try {
+    const result = await therapyNotificationService.cleanupVagueNotifications(req.params.appointmentId);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        deletedCount: result.deletedCount,
+        message: `Removed ${result.deletedCount} vague notifications`
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Error cleaning up vague notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cleanup notifications'
+    });
   }
 });
 
@@ -175,44 +263,32 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// Process due notifications (admin/system endpoint)
+// Process due notifications (admin/system endpoint) - Use focused therapy notification service
 router.post('/process-due', authorize(['admin']), async (req, res) => {
   try {
-    const result = await notificationService.getDueNotifications();
+    const result = await therapyNotificationService.processDueNotifications();
     
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.error });
     }
 
-    const processResults = [];
-    
-    for (const notification of result.notifications) {
-      const processResult = await notificationService.processNotification(notification);
-      processResults.push({
-        notificationId: notification._id,
-        templateId: notification.templateId,
-        success: processResult.success,
-        results: processResult.results || [],
-        error: processResult.error
-      });
-    }
-
     res.json({
       success: true,
-      message: `Processed ${processResults.length} notifications`,
-      results: processResults
+      message: `Processed ${result.processed} notifications`,
+      processed: result.processed,
+      results: result.results
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// Cancel notifications for an appointment
+// Cancel notifications for an appointment (use therapy notification service)
 router.delete('/appointment/:appointmentId', authorize(['practitioner', 'admin']), async (req, res) => {
   try {
     const { appointmentId } = req.params;
     
-    const result = await notificationService.cancelAppointmentNotifications(appointmentId);
+    const result = await therapyNotificationService.cancelAppointmentNotifications(appointmentId);
     
     if (!result.success) {
       return res.status(400).json({ success: false, message: result.error });
@@ -220,8 +296,8 @@ router.delete('/appointment/:appointmentId', authorize(['practitioner', 'admin']
 
     res.json({
       success: true,
-      message: `Cancelled ${result.modifiedCount} pending notifications`,
-      modifiedCount: result.modifiedCount
+      message: `Cancelled ${result.cancelledCount} pending notifications`,
+      cancelledCount: result.cancelledCount
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

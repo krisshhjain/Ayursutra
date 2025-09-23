@@ -163,9 +163,12 @@ export const login = async (req, res) => {
       });
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Update last login without triggering validation
+    if (userType === 'patient') {
+      await Patient.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+    } else {
+      await Practitioner.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+    }
 
     // Generate JWT token using the userType from request (should match the collection we found user in)
     const token = generateToken(user._id, userType);

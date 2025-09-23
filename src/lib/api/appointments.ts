@@ -65,6 +65,7 @@ export interface Practitioner {
   experience?: number;
   qualifications?: string[];
   profileImage?: string;
+  gender: 'male' | 'female' | 'other';
 }
 
 // Helper function to get auth headers
@@ -206,8 +207,13 @@ export const appointmentAPI = {
   },
 
   // Get practitioners (for booking)
-  async getPractitioners(): Promise<Practitioner[]> {
-    const response = await fetch(`${API_BASE_URL}/appointments/practitioners`, {
+  async getPractitioners(gender?: 'any' | 'female'): Promise<Practitioner[]> {
+    const queryParams = new URLSearchParams();
+    if (gender && gender !== 'any') {
+      queryParams.append('gender', gender);
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/practitioners?${queryParams.toString()}`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });

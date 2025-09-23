@@ -1,5 +1,6 @@
 import PractitionerAvailability from '../models/PractitionerAvailability.js';
 import Appointment from '../models/Appointment.js';
+import UnavailableDate from '../models/UnavailableDate.js';
 
 /**
  * Generate available time slots for a practitioner on a specific date
@@ -25,6 +26,17 @@ export async function generateSlots(practitionerId, date, options = {}) {
     // Parse the date and get weekday
     const targetDate = new Date(date + 'T00:00:00.000Z');
     const weekday = targetDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+
+    // Check if practitioner has marked this date as unavailable
+    const isDateUnavailable = await UnavailableDate.isDateUnavailable(practitionerId, date);
+    if (isDateUnavailable) {
+      return {
+        date,
+        timezone,
+        slots: [],
+        message: 'Practitioner is not available on this date'
+      };
+    }
 
     // Check if practitioner works on this weekday
     const workingHours = availability.getWorkingHours(weekday);

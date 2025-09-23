@@ -592,6 +592,228 @@ Thank you for choosing AyurSutra for your wellness journey!
 With gratitude,
 The AyurSutra Team`
     }
+  },
+
+  'appointment-cancelled': {
+    id: 'appointment-cancelled',
+    name: 'Appointment Cancellation Notice',
+    subject: 'Appointment Cancelled - {{therapy}}',
+    inApp: {
+      title: 'Appointment Cancelled',
+      message: 'Your {{therapy}} session with {{practitionerName}} on {{date}} at {{time}} has been cancelled. {{reason}}',
+      actionText: 'Reschedule',
+      actionUrl: '/patient-schedule'
+    },
+    email: {
+      subject: 'Important: Your {{therapy}} Appointment Has Been Cancelled',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">AyurSutra</h1>
+            <p style="color: white; margin: 5px 0;">Holistic Healing & Wellness</p>
+          </div>
+          
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #ef4444;">Appointment Cancellation Notice</h2>
+            
+            <p>Dear {{patientName}},</p>
+            
+            <p>We regret to inform you that your upcoming appointment has been cancelled.</p>
+            
+            <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #ef4444;">📅 Cancelled Appointment Details</h4>
+              <p><strong>Therapy:</strong> {{therapy}}</p>
+              <p><strong>Practitioner:</strong> {{practitionerName}}</p>
+              <p><strong>Original Date:</strong> {{date}}</p>
+              <p><strong>Original Time:</strong> {{time}}</p>
+              <p><strong>Reason:</strong> {{reason}}</p>
+            </div>
+            
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #0369a1;">🔄 What's Next?</h4>
+              <p>We sincerely apologize for any inconvenience this may cause. We'd be happy to help you reschedule your appointment:</p>
+              <ul>
+                <li>Visit your patient dashboard to book a new appointment</li>
+                <li>Call us directly at our clinic</li>
+                <li>Reply to this email with your preferred times</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{appointmentLink}}" style="background: #22c55e; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Schedule New Appointment</a>
+            </div>
+            
+            <div style="background: #dcfce7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #16a34a;">💚 We're Here for You</h4>
+              <p>Your health and wellness journey is important to us. If you have any questions or concerns, please don't hesitate to contact our support team.</p>
+            </div>
+            
+            <p>Thank you for your understanding and continued trust in AyurSutra.</p>
+            
+            <p>With care,<br>The AyurSutra Team</p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p>© 2025 AyurSutra. All rights reserved.</p>
+            <p><a href="{{unsubscribeLink}}" style="color: #6b7280;">Unsubscribe from notifications</a></p>
+          </div>
+        </div>
+      `,
+      text: `Dear {{patientName}},
+
+❌ Appointment Cancelled
+
+We regret to inform you that your upcoming appointment has been cancelled.
+
+📅 Cancelled Appointment Details:
+- Therapy: {{therapy}}
+- Practitioner: {{practitionerName}}
+- Original Date: {{date}}
+- Original Time: {{time}}
+- Reason: {{reason}}
+
+🔄 What's Next?
+We sincerely apologize for any inconvenience this may cause. We'd be happy to help you reschedule your appointment:
+
+• Visit your patient dashboard to book a new appointment
+• Call us directly at our clinic
+• Reply to this email with your preferred times
+
+Schedule New Appointment: {{appointmentLink}}
+
+💚 We're Here for You
+Your health and wellness journey is important to us. If you have any questions or concerns, please don't hesitate to contact our support team.
+
+Thank you for your understanding and continued trust in AyurSutra.
+
+With care,
+The AyurSutra Team`
+    }
+  },
+
+  'appointment-rescheduled': {
+    id: 'appointment-rescheduled',
+    name: 'Appointment Rescheduled Notice',
+    subject: 'Appointment Rescheduled - {{therapy}}',
+    inApp: {
+      title: 'Appointment Rescheduled',
+      message: 'Your {{therapy}} session with {{practitionerName}} has been rescheduled from {{oldDate}} at {{oldTime}} to {{newDate}} at {{newTime}}. {{reason}}',
+      actionText: 'View Updated Details',
+      actionUrl: '/patient-schedule'
+    },
+    email: {
+      subject: 'Important: Your {{therapy}} Appointment Has Been Rescheduled',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">AyurSutra</h1>
+            <p style="color: white; margin: 5px 0;">Holistic Healing & Wellness</p>
+          </div>
+          
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #f59e0b;">🔄 Appointment Rescheduled</h2>
+            
+            <p>Dear {{patientName}},</p>
+            
+            <p>We wanted to inform you that your upcoming appointment has been rescheduled by {{practitionerName}}.</p>
+            
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #d97706;">📅 Schedule Change Details</h4>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <div style="flex: 1; margin-right: 20px;">
+                  <h5 style="color: #991b1b; margin-bottom: 10px;">❌ Previous Schedule</h5>
+                  <p><strong>Date:</strong> {{oldDate}}</p>
+                  <p><strong>Time:</strong> {{oldTime}}</p>
+                </div>
+                <div style="flex: 1;">
+                  <h5 style="color: #16a34a; margin-bottom: 10px;">✅ New Schedule</h5>
+                  <p><strong>Date:</strong> {{newDate}}</p>
+                  <p><strong>Time:</strong> {{newTime}}</p>
+                </div>
+              </div>
+              <p><strong>Therapy:</strong> {{therapy}}</p>
+              <p><strong>Practitioner:</strong> {{practitionerName}}</p>
+              <p><strong>Reason for Change:</strong> {{reason}}</p>
+            </div>
+            
+            <div style="background: #dcfce7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #16a34a;">✅ Your Appointment is Confirmed</h4>
+              <p>Your rescheduled appointment is automatically confirmed. You'll receive reminder notifications as your new appointment time approaches.</p>
+            </div>
+            
+            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #d97706;">🧘 Prepare for Your Session</h4>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Drink warm water 30 minutes before your session</li>
+                <li>Avoid heavy meals 2 hours before the treatment</li>
+                <li>Wear comfortable, loose clothing</li>
+                <li>Arrive 15 minutes early for consultation</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{appointmentLink}}" style="background: #22c55e; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">View Updated Appointment</a>
+            </div>
+            
+            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #0369a1;">❓ Need to Make Changes?</h4>
+              <p>If the new time doesn't work for you, please contact us as soon as possible to discuss alternative options.</p>
+            </div>
+            
+            <p>We apologize for any inconvenience this change may cause and appreciate your understanding.</p>
+            
+            <p>Thank you for your continued trust in AyurSutra.</p>
+            
+            <p>With care,<br>The AyurSutra Team</p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+            <p>© 2025 AyurSutra. All rights reserved.</p>
+            <p><a href="{{unsubscribeLink}}" style="color: #6b7280;">Unsubscribe from notifications</a></p>
+          </div>
+        </div>
+      `,
+      text: `Dear {{patientName}},
+
+🔄 Appointment Rescheduled
+
+We wanted to inform you that your upcoming appointment has been rescheduled by {{practitionerName}}.
+
+📅 Schedule Change Details:
+
+❌ Previous Schedule:
+- Date: {{oldDate}}
+- Time: {{oldTime}}
+
+✅ New Schedule:
+- Date: {{newDate}}
+- Time: {{newTime}}
+
+- Therapy: {{therapy}}
+- Practitioner: {{practitionerName}}
+- Reason for Change: {{reason}}
+
+✅ Your Appointment is Confirmed
+Your rescheduled appointment is automatically confirmed. You'll receive reminder notifications as your new appointment time approaches.
+
+🧘 Prepare for Your Session:
+- Drink warm water 30 minutes before your session
+- Avoid heavy meals 2 hours before the treatment
+- Wear comfortable, loose clothing
+- Arrive 15 minutes early for consultation
+
+View Updated Appointment: {{appointmentLink}}
+
+❓ Need to Make Changes?
+If the new time doesn't work for you, please contact us as soon as possible to discuss alternative options.
+
+We apologize for any inconvenience this change may cause and appreciate your understanding.
+
+Thank you for your continued trust in AyurSutra.
+
+With care,
+The AyurSutra Team`
+    }
   }
 };
 

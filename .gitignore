@@ -45,3 +45,4 @@ secrets*
 
 # Optional: ignore local IDE settings that may contain secrets
 .vscode/settings.json
+node_modules/

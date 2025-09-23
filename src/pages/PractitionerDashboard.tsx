@@ -308,7 +308,7 @@ const PractitionerDashboard = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Brain className="h-5 w-5 text-wellness" />
-                      <span>AI Insights</span>
+                      <span>Insights</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">

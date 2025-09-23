@@ -54,6 +54,31 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     maxlength: [500, 'Notes cannot exceed 500 characters']
   },
+  // Therapy-related fields
+  type: {
+    type: String,
+    enum: ['consultation', 'therapy', 'follow-up', 'emergency'],
+    default: 'consultation'
+  },
+  therapyType: {
+    type: String,
+    enum: ['panchakarma', 'rasayana', 'kayachikitsa', 'shalakya', 'general'],
+    required: function() {
+      return this.type === 'therapy';
+    }
+  },
+  therapyProgramId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TherapyProgram'
+  },
+  sessionNumber: {
+    type: Number,
+    min: 1
+  },
+  time: {
+    type: String, // "14:30" format for backward compatibility
+    required: true
+  },
   meta: {
     type: mongoose.Schema.Types.Mixed
   }
