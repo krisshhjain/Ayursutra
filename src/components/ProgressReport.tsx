@@ -255,18 +255,18 @@ const ProgressReport: React.FC<ProgressReportProps> = ({ programId, onClose }) =
         programId: programId || 'demo-program-123',
         programName: 'Complete Panchakarma Therapy Program',
         patient: {
-          name: 'Sarah Johnson',
+          name: 'Mr Harsh Jain',
           age: 34,
-          gender: 'Female'
+          gender: 'Male'
         },
         practitioner: {
-          name: 'Dr. Rajesh Kumar',
+          name: 'Dr. Suyash Dangi',
           specialization: 'Panchakarma Specialist'
         },
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+        startDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
         endDate: new Date().toISOString(),
         status: 'completed',
-        totalDuration: 30
+        totalDuration: 1
       },
       progressMetrics: {
         completionRate: 100,

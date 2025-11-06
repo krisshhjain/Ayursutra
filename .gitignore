@@ -7,10 +7,27 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
 *.local
+out/
+
+# Testing
+coverage/
+.nyc_output
+
+# Cache
+.npm
+.eslintcache
+.cache
+.parcel-cache
 
 # Editor directories and files
 .vscode/*
@@ -23,11 +40,16 @@ dist-ssr
 *.sln
 *.sw?
 
-## Ignore environment and secret files
+## Environment and secret files
 # Env files
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 Backend/.env
+Backend/.env.*
 
 # Common secret types
 *.key
@@ -42,7 +64,17 @@ NOTIFICATION_SYSTEM_SUMMARY.md
 # Other local secrets
 .secret
 secrets*
+config/secrets.js
 
-# Optional: ignore local IDE settings that may contain secrets
-.vscode/settings.json
-node_modules/
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Bun
+bun.lockb
