@@ -17,6 +17,9 @@ router.get('/dashboard', async (req, res) => {
   try {
     const patientId = req.user._id;
     const patient = await Patient.findById(patientId);
+    
+    console.log('Dashboard - Patient ID:', patientId);
+    console.log('Dashboard - Profile Image:', patient.profileImage);
 
     // Mock next therapy data (replace with actual appointment data)
     const therapies = ['Abhyanga', 'Shirodhara', 'Panchakarma', 'Rasayana'];
@@ -252,6 +255,9 @@ router.post('/profile/image', upload.single('profileImage'), async (req, res) =>
 
     // Get the patient and delete old image if exists
     const patient = await Patient.findById(patientId);
+    console.log('Upload - Patient found:', !!patient);
+    console.log('Upload - Old profile image:', patient.profileImage);
+    
     if (patient.profileImage) {
       await deleteOldProfileImage(patient.profileImage);
     }
@@ -259,7 +265,10 @@ router.post('/profile/image', upload.single('profileImage'), async (req, res) =>
     // Save the new image filename
     const imageUrl = getProfileImageUrl(req.file.filename, req);
     patient.profileImage = req.file.filename;
+    
+    console.log('Upload - Saving new filename:', req.file.filename);
     await patient.save();
+    console.log('Upload - Saved successfully. New profile image:', patient.profileImage);
 
     res.status(200).json({
       success: true,

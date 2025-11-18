@@ -16,15 +16,16 @@ router.use(authorize('practitioner'));
 router.get('/dashboard', async (req, res) => {
   try {
     const practitionerId = req.user._id;
+    const practitioner = await Practitioner.findById(practitionerId);
+    
+    console.log('Dashboard - Practitioner ID:', practitionerId);
+    console.log('Dashboard - Profile Image:', practitioner.profileImage);
 
     // Get active patients count (mock for now - replace with actual appointments/patients data)
     const activePatients = await Patient.countDocuments({ isActive: true });
     
     // Mock today's sessions (replace with actual appointment queries when appointments model exists)
     const todaySessions = Math.floor(Math.random() * 15) + 5;
-    
-    // Get practitioner data and real rating from reviews
-    const practitioner = await Practitioner.findById(practitionerId);
     
     // Get real average rating from reviews
     let avgRating = 0;
@@ -300,6 +301,9 @@ router.post('/profile/image', upload.single('profileImage'), async (req, res) =>
 
     // Get the practitioner and delete old image if exists
     const practitioner = await Practitioner.findById(practitionerId);
+    console.log('Upload - Practitioner found:', !!practitioner);
+    console.log('Upload - Old profile image:', practitioner.profileImage);
+    
     if (practitioner.profileImage) {
       await deleteOldProfileImage(practitioner.profileImage);
     }
@@ -307,7 +311,10 @@ router.post('/profile/image', upload.single('profileImage'), async (req, res) =>
     // Save the new image filename
     const imageUrl = getProfileImageUrl(req.file.filename, req);
     practitioner.profileImage = req.file.filename;
+    
+    console.log('Upload - Saving new filename:', req.file.filename);
     await practitioner.save();
+    console.log('Upload - Saved successfully. New profile image:', practitioner.profileImage);
 
     res.status(200).json({
       success: true,
