@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import ResponsiveSidebar from '@/components/navigation/ResponsiveSidebar';
 import MobileNavigation from '@/components/navigation/MobileNavigation';
+import ProfileImageUploader from '@/components/ProfileImageUploader';
 import { useMediaQuery } from '@mui/material';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,6 +20,7 @@ const PatientProfile = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -64,7 +66,10 @@ const PatientProfile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/patient/dashboard', {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        
+        // Fetch dashboard data
+        const res = await fetch(`${API_BASE_URL}/patient/dashboard`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -89,6 +94,19 @@ const PatientProfile = () => {
             allergies: Array.isArray(p.allergies) ? p.allergies.join(', ') : prev.allergies,
             currentMedications: Array.isArray(p.currentMedications) ? p.currentMedications.join(', ') : prev.currentMedications,
           }));
+        }
+
+        // Fetch profile image
+        const imageRes = await fetch(`${API_BASE_URL}/patient/profile/image`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const imageData = await imageRes.json();
+        if (imageData.success && imageData.data.profileImage) {
+          setProfileImage(imageData.data.profileImage);
         }
       } catch (error) {
         console.error('Failed to fetch patient profile:', error);
@@ -167,15 +185,15 @@ const PatientProfile = () => {
                   transition={{ delay: 0.1 }}
                 >
                   <Card className="p-6 text-center">
-                    <div className="relative w-32 h-32 mx-auto mb-4">
-                      <div className="w-32 h-32 bg-gradient-primary rounded-full flex items-center justify-center">
-                        <User className="h-16 w-16 text-white" />
-                      </div>
-                      {isEditing && (
-                        <button className="absolute bottom-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white">
-                          <Camera className="h-4 w-4" />
-                        </button>
-                      )}
+                    <div className="mb-4">
+                      <ProfileImageUploader
+                        userType="patient"
+                        currentImageUrl={profileImage}
+                        userName={profileData.name}
+                        onImageUpdate={setProfileImage}
+                        editable={isEditing}
+                        size="lg"
+                      />
                     </div>
                     <h3 className="font-semibold text-foreground">{profileData.name}</h3>
                     <p className="text-sm text-muted-foreground">Patient ID: PT001</p>

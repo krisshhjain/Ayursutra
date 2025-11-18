@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     enum: ['patient', 'practitioner']
   },
+  profileImage: {
+    type: String,
+    default: null
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -59,6 +63,10 @@ const userSchema = new mongoose.Schema({
 // Patient-specific fields
 const patientSchema = new mongoose.Schema({
   ...userSchema.obj,
+  profileImage: {
+    type: String,
+    default: null
+  },
   age: {
     type: Number,
     required: [true, 'Age is required'],
@@ -91,6 +99,10 @@ const patientSchema = new mongoose.Schema({
 // Practitioner-specific fields
 const practitionerSchema = new mongoose.Schema({
   ...userSchema.obj,
+  profileImage: {
+    type: String,
+    default: null
+  },
   gender: {
     type: String,
     required: [true, 'Gender is required'],

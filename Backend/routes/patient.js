@@ -1,6 +1,8 @@
 import express from 'express';
 import { Patient, Practitioner } from '../models/User.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
+import { deleteOldProfileImage, getProfileImageUrl } from '../utils/fileUtils.js';
 
 const router = express.Router();
 
@@ -222,6 +224,120 @@ router.get('/progress', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get progress data',
+      error: error.message
+    });
+  }
+});
+
+// @route   POST /api/patient/profile/image
+// @desc    Upload or update patient profile image
+// @access  Private (Patient only)
+router.post('/profile/image', upload.single('profileImage'), async (req, res) => {
+  try {
+    const patientId = req.user._id;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+
+    // Get the patient and delete old image if exists
+    const patient = await Patient.findById(patientId);
+    if (patient.profileImage) {
+      await deleteOldProfileImage(patient.profileImage);
+    }
+
+    // Save the new image filename
+    const imageUrl = getProfileImageUrl(req.file.filename, req);
+    patient.profileImage = req.file.filename;
+    await patient.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile image uploaded successfully',
+      data: {
+        profileImage: imageUrl
+      }
+    });
+
+  } catch (error) {
+    console.error('Upload profile image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload profile image',
+      error: error.message
+    });
+  }
+});
+
+// @route   GET /api/patient/profile/image
+// @desc    Get patient profile image URL
+// @access  Private (Patient only)
+router.get('/profile/image', async (req, res) => {
+  try {
+    const patientId = req.user._id;
+    const patient = await Patient.findById(patientId).select('profileImage');
+
+    if (!patient.profileImage) {
+      return res.status(404).json({
+        success: false,
+        message: 'No profile image found'
+      });
+    }
+
+    const imageUrl = getProfileImageUrl(patient.profileImage, req);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        profileImage: imageUrl
+      }
+    });
+
+  } catch (error) {
+    console.error('Get profile image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get profile image',
+      error: error.message
+    });
+  }
+});
+
+// @route   DELETE /api/patient/profile/image
+// @desc    Delete patient profile image
+// @access  Private (Patient only)
+router.delete('/profile/image', async (req, res) => {
+  try {
+    const patientId = req.user._id;
+    const patient = await Patient.findById(patientId);
+
+    if (!patient.profileImage) {
+      return res.status(404).json({
+        success: false,
+        message: 'No profile image to delete'
+      });
+    }
+
+    // Delete the image file
+    await deleteOldProfileImage(patient.profileImage);
+
+    // Remove from database
+    patient.profileImage = null;
+    await patient.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile image deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete profile image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete profile image',
       error: error.message
     });
   }

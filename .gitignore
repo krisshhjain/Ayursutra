@@ -71,6 +71,9 @@ config/secrets.js
 *.sqlite
 *.sqlite3
 
+# Uploads
+Backend/uploads/
+
 # OS files
 .DS_Store
 Thumbs.db

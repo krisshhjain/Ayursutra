@@ -22,11 +22,13 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResponsiveSidebar from '@/components/navigation/ResponsiveSidebar';
 import MobileNavigation from '@/components/navigation/MobileNavigation';
+import ProfileImageUploader from '@/components/ProfileImageUploader';
 import { useMediaQuery } from '@mui/material';
 
 const PractitionerProfile = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [practitionerInfo, setPractitionerInfo] = useState({ firstName: '', lastName: '', specialization: '' });
   const [profile, setProfile] = useState({
     name: '',
@@ -57,8 +59,10 @@ const PractitionerProfile = () => {
   const fetchPractitionerProfile = async () => {
     try {
       const token = localStorage.getItem('token');
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       
-      const response = await fetch('http://localhost:5000/api/practitioner/dashboard', {
+      // Fetch dashboard data
+      const response = await fetch(`${API_BASE_URL}/practitioner/dashboard`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -77,6 +81,19 @@ const PractitionerProfile = () => {
           experience: `${practitioner.experience || 5} years`,
           qualifications: practitioner.qualification || 'BAMS'
         }));
+      }
+
+      // Fetch profile image
+      const imageRes = await fetch(`${API_BASE_URL}/practitioner/profile/image`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const imageData = await imageRes.json();
+      if (imageData.success && imageData.data.profileImage) {
+        setProfileImage(imageData.data.profileImage);
       }
     } catch (error) {
       console.error('Error fetching practitioner profile:', error);
@@ -148,16 +165,14 @@ const PractitionerProfile = () => {
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center">
-                      <div className="relative">
-                        <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-semibold">
-                          PS
-                        </div>
-                        {isEditing && (
-                          <Button size="sm" variant="outline" className="absolute -bottom-2 -right-2 rounded-full p-2 h-8 w-8">
-                            <Camera className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
+                      <ProfileImageUploader
+                        userType="practitioner"
+                        currentImageUrl={profileImage}
+                        userName={profile.name}
+                        onImageUpdate={setProfileImage}
+                        editable={isEditing}
+                        size="md"
+                      />
                       
                       <div className="text-center mt-4">
                         <h3 className="font-semibold text-foreground">{profile.name}</h3>
