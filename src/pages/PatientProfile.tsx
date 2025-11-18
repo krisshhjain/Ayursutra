@@ -95,12 +95,9 @@ const PatientProfile = () => {
             currentMedications: Array.isArray(p.currentMedications) ? p.currentMedications.join(', ') : prev.currentMedications,
           }));
           
-          // Set profile image if available
+          // Set profile image if available (backend returns full URL)
           if (p.profileImage) {
-            const fullImageUrl = p.profileImage.startsWith('http') 
-              ? p.profileImage 
-              : `${API_BASE_URL.replace('/api', '')}/uploads/profiles/${p.profileImage}`;
-            setProfileImage(fullImageUrl);
+            setProfileImage(p.profileImage);
           }
         }
       } catch (error) {

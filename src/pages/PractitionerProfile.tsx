@@ -85,13 +85,9 @@ const PractitionerProfile = () => {
           consultationFee: practitioner.consultationFee ? `₹${practitioner.consultationFee}` : prev.consultationFee
         }));
         
-        // Set profile image if available
+        // Set profile image if available (backend returns full URL)
         if (practitioner.profileImage) {
-          const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-          const fullImageUrl = practitioner.profileImage.startsWith('http') 
-            ? practitioner.profileImage 
-            : `${API_BASE_URL.replace('/api', '')}/uploads/profiles/${practitioner.profileImage}`;
-          setProfileImage(fullImageUrl);
+          setProfileImage(practitioner.profileImage);
         }
       }
     } catch (error) {

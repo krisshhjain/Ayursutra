@@ -53,7 +53,7 @@ router.get('/dashboard', async (req, res) => {
           experience: practitioner.experience || 5,
           qualification: practitioner.qualification || 'BAMS',
           qualifications: practitioner.qualifications,
-          profileImage: practitioner.profileImage,
+          profileImage: practitioner.profileImage ? getProfileImageUrl(practitioner.profileImage, req) : null,
           licenseNumber: practitioner.licenseNumber,
           consultationFee: practitioner.consultationFee
         },

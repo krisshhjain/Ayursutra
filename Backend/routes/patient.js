@@ -95,7 +95,7 @@ router.get('/dashboard', async (req, res) => {
           email: patient.email,
           mobile: patient.mobile,
           gender: patient.gender,
-          profileImage: patient.profileImage,
+          profileImage: patient.profileImage ? getProfileImageUrl(patient.profileImage, req) : null,
           medicalHistory: patient.medicalHistory,
           allergies: patient.allergies,
           currentMedications: patient.currentMedications,
