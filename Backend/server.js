@@ -33,21 +33,7 @@ connectDB();
 // Initialize Express app
 const app = express();
 
-// Security middleware
-app.use(helmet());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again later.'
-  }
-});
-app.use(limiter);
-
-// CORS configuration
+// CORS configuration - must be before other middleware
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -81,12 +67,33 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Security middleware - configure helmet to allow images
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.'
+  }
+});
+app.use(limiter);
+
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files from uploads directory with CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
