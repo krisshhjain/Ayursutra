@@ -92,7 +92,14 @@ router.get('/dashboard', async (req, res) => {
           firstName: patient.firstName,
           lastName: patient.lastName,
           age: patient.age,
-          email: patient.email
+          email: patient.email,
+          mobile: patient.mobile,
+          gender: patient.gender,
+          profileImage: patient.profileImage,
+          medicalHistory: patient.medicalHistory,
+          allergies: patient.allergies,
+          currentMedications: patient.currentMedications,
+          emergencyContact: patient.emergencyContact
         },
         stats,
         progressSummary,

@@ -77,23 +77,22 @@ const PractitionerProfile = () => {
         setProfile(prev => ({
           ...prev,
           name: `Dr. ${practitioner.firstName} ${practitioner.lastName}`,
+          email: practitioner.email || prev.email,
+          phone: practitioner.mobile || prev.phone,
           specialization: practitioner.specialization || 'Ayurvedic Practitioner',
           experience: `${practitioner.experience || 5} years`,
-          qualifications: practitioner.qualification || 'BAMS'
+          qualifications: practitioner.qualification || 'BAMS',
+          consultationFee: practitioner.consultationFee ? `₹${practitioner.consultationFee}` : prev.consultationFee
         }));
-      }
-
-      // Fetch profile image
-      const imageRes = await fetch(`${API_BASE_URL}/practitioner/profile/image`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const imageData = await imageRes.json();
-      if (imageData.success && imageData.data.profileImage) {
-        setProfileImage(imageData.data.profileImage);
+        
+        // Set profile image if available
+        if (practitioner.profileImage) {
+          const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+          const fullImageUrl = practitioner.profileImage.startsWith('http') 
+            ? practitioner.profileImage 
+            : `${API_BASE_URL.replace('/api', '')}/uploads/profiles/${practitioner.profileImage}`;
+          setProfileImage(fullImageUrl);
+        }
       }
     } catch (error) {
       console.error('Error fetching practitioner profile:', error);

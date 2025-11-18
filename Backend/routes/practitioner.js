@@ -46,9 +46,16 @@ router.get('/dashboard', async (req, res) => {
         practitioner: {
           firstName: practitioner.firstName,
           lastName: practitioner.lastName,
+          email: practitioner.email,
+          mobile: practitioner.mobile,
+          gender: practitioner.gender,
           specialization: practitioner.specialization || 'Ayurvedic Practitioner',
           experience: practitioner.experience || 5,
-          qualification: practitioner.qualification || 'BAMS'
+          qualification: practitioner.qualification || 'BAMS',
+          qualifications: practitioner.qualifications,
+          profileImage: practitioner.profileImage,
+          licenseNumber: practitioner.licenseNumber,
+          consultationFee: practitioner.consultationFee
         },
         stats: {
           activePatients,

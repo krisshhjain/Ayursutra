@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Edit3, Save, X, Camera, Bell, Shield, Heart, Calendar, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -62,7 +62,7 @@ const PatientProfile = () => {
   };
 
   // Fetch patient dashboard/profile data from backend and populate form
-  useState(() => {
+  useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -94,19 +94,14 @@ const PatientProfile = () => {
             allergies: Array.isArray(p.allergies) ? p.allergies.join(', ') : prev.allergies,
             currentMedications: Array.isArray(p.currentMedications) ? p.currentMedications.join(', ') : prev.currentMedications,
           }));
-        }
-
-        // Fetch profile image
-        const imageRes = await fetch(`${API_BASE_URL}/patient/profile/image`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        const imageData = await imageRes.json();
-        if (imageData.success && imageData.data.profileImage) {
-          setProfileImage(imageData.data.profileImage);
+          
+          // Set profile image if available
+          if (p.profileImage) {
+            const fullImageUrl = p.profileImage.startsWith('http') 
+              ? p.profileImage 
+              : `${API_BASE_URL.replace('/api', '')}/uploads/profiles/${p.profileImage}`;
+            setProfileImage(fullImageUrl);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch patient profile:', error);
@@ -114,7 +109,7 @@ const PatientProfile = () => {
     };
 
     fetchProfile();
-  });
+  }, []);
 
   const handleCancel = () => {
     setIsEditing(false);
